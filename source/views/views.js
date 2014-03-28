@@ -33,14 +33,16 @@ enyo.kind({
 
 	// To.오선임님 - collection 관련 부분적으로 구현된 것을 갖고 왔습니다. 참고 부탁드립니다.
 	bindings: [
-		{from: ".collection", to: ".$.dataList.collection"},
-		{from: ".collection", to: ".$.gridList.collection"}		
+		{from: ".artlist", to: ".$.dataList.collection"},
+		{from: ".artlist", to: ".$.gridList.collection"}		
 	],
 	
 	create: function () {
 		this.inherited(arguments);
+		this.artlist = new seoulart.ArtCollection();
+		artlist.fetch();
 		// we set the collection that will fire the binding and add it to the list
-		this.set("collection", new enyo.Collection(this.generateRecords()));
+		//this.set("collection", new enyo.Collection(this.generateRecords()));
 	},
 	
 	generateRecords: function () {
@@ -75,8 +77,8 @@ enyo.kind({
 	selectionOverlayVerticalOffset: 35,
 	subCaption: "Sub Caption",
 	bindings: [
-		{from: ".model.text", to: ".caption"},
-		{from: ".model.subText", to: ".subCaption"},
-		{from: ".model.url", to: ".source"}
+		{from: ".model.artname", to: ".caption"},
+		{from: ".model.artist", to: ".subCaption"},
+		{from: ".model.mainimg", to: ".source"}
 	]
 });

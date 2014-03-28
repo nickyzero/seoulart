@@ -39,7 +39,7 @@ enyo.kind({
 		var url.end_number = '50';
 		return url.domain+'/'
 			+'/'+ url.key +'/'+ url.type +'/'+ url.service +'/'+ url.start_number +'/'+ url.end_number+'/';
-	}
+	},
 	parse: function(data){
 		return data.row;
 	}
