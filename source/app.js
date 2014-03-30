@@ -12,6 +12,4 @@ enyo.kind({
 
 enyo.ready(function () {
 	new myapp.Application({name: "app"});
-
-	
 });
