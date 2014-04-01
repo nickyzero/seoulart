@@ -30,28 +30,28 @@ enyo.kind({
 	kind: "enyo.Collection",
 	model: "seoulart.ArtModel",
 	getUrl: function(){
-		var url.domain = 'http://openapi.seoul.go.kr:8088';
-		var url.key = 'sample';
-		// var url.key = '77687141466e696335367368536448';
-		var url.type = 'json';
-		var url.service = 'EnglishListCollectionOfSeoulMOAService';
-		var url.start_number = '1';
-		var url.end_number = '50';
-		return url.domain+'/'
-			+'/'+ url.key +'/'+ url.type +'/'+ url.service +'/'+ url.start_number +'/'+ url.end_number+'/';
+		var domain = 'http://openapi.seoul.go.kr:8088';
+		//var key = 'sample'; // use for test
+		var key = '77687141466e696335367368536448';
+		var type = 'json';
+		var service = 'EnglishListCollectionOfSeoulMOAService';
+		var start_number = '';
+		//var end_number = '919';
+		var end_number = ''; // use for test
+		return domain+'/'
+			+'/'+ key +'/'+ type +'/'+ service +'/'+ this.get("start_number") +'/'+ this.get("end_number")+'/';
+		//return domain+'/'
+		//	+'/'+ key +'/'+ type +'/'+ service +'/'+ start_number+'/'+ end_number+'/';
+	},
+	//url: "http://openapi.seoul.go.kr:8088/sample/json/EnglishListCollectionOfSeoulMOAService/1/5/",
+	create:function(){
+		this.inherited(arguments);
+		//alert(this.get("start_number")+this.get("end_number"));
+		this.fetch();
 	},
 	parse: function(data){
-		return data.row;
+		return data.EnglishListCollectionOfSeoulMOAService.row;
 	}
 });
 
-/*
-url.domain = 'http://openapi.seoul.go.kr:8088';
-		//url.key = 'sample';
-		url.key = '77687141466e696335367368536448';
-		url.type = 'json';
-		url.service = 'EnglishListCollectionOfSeoulMOAService';
-		url.start_number = '1';
-		url.end_number = '50';
-*/
 
