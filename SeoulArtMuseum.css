@@ -1,10 +1,6 @@
-body {
-	margin: 0;
-	padding: 0;
-	background: #5d5c5c;
-	font-family: 'NanumGothic';
-	background-image:url("Sema_01.jpg");
-	background-repeat: no-repeat; 
-	background-size:100%;
+.title_name{
+	color: #000000;
+ 	text-shadow:#AAA 0px 1px 0, #000 0 -1px 0;
+ 	text-align:left;
 }
 
