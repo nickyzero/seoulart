@@ -10,24 +10,38 @@ enyo.kind({
 	pattern: "activity",
 	classes: "moon enyo-fit",
 	
-	//tag:"background", src:"Sema_01.jpg", 
 	published: {
-		collection : null
+		collection : null,
+		clipCount : 40,
+		totalArts : 919
 	},
 	components: [
-		{kind: "moon.Panel", name: "mainPanel", classes:"moon-3h", headerBackgroundSrc:"assets/Logo_BW.jpg", title:"", components: [
+		{kind: "moon.Panel", name: "mainPanel", classes:"moon-3h", headerBackgroundSrc:"assets/Logo_BW.jpg", headerBackgroundPosition: "center left", title:"", components: [
 			{kind:"moon.Item", content:"Introduction"},
 			{kind:"moon.Item", content:"Gallery"},
 			{kind:"moon.Item", content:"SeMA"},
 			{kind:"moon.Item", content:"App Info"}
 		]},
 		
-		{kind: "moon.Panel", name:"subPanel", joinToPrev: true, title:"Seoul Museum of Art", headerBackgroundSrc:"assets/Sema_Title.jpg", headerComponents: [
-			{kind: "moon.Button", content:"Next", ontap:"nextItems"}], 
+		{kind: "moon.Panel", name:"subPanel", joinToPrev: true, title:"Seoul Museum of Art", classes : "title_name", headerBackgroundSrc:"assets/Sema_Title.jpg", headerBackgroundPosition: "top left", 
+			headerComponents: [
+			{kind: "moon.IconButton", icon: "search", small: false, ontap: "buttonTapped"},
+			{kind: "moon.Button", name: "prevButton", content:"Prev", ontap:"previousItems"},
+			{kind: "moon.Button", name: "nextButton", content:"Next", ontap:"nextItems"},
+			
+			], 
 			components: [
-			{name: "gridList", fit: true, spacing: 20, minWidth: 180, minHeight: 270, kind: "moon.DataGridList", 
-			scrollerOptions: { kind: "moon.Scroller", vertical:"scroll", horizontal: "hidden", spotlightPagingControls: true }, 
-			components: [
+			{
+				name: "gridList",
+				kind: "moon.DataGridList", 
+				fit: true, 
+				spacing: 20, 
+				minWidth: 180,
+				//minHeight: 270,
+				minHeight: 500, 
+				fixedSize: false ,
+				scrollerOptions: { kind: "moon.Scroller", vertical:"scroll", horizontal: "hidden", spotlightPagingControls: true }, 
+				components: [
 				{ kind: "moon.sample.GridSampleItem", ontap:"showlog"}
 			]}
 		]},
@@ -36,51 +50,67 @@ enyo.kind({
 		{kind: "moon.Panel", name: "detailImage", }
 	],
 
-	// To.오선임님 - collection 관련 부분적으로 구현된 것을 갖고 왔습니다. 참고 부탁드립니다.
+	// binding from collection to collection of datalist and gridlist 
 	bindings: [
 		{from: ".collection", to: ".$.dataList.collection"},
 		{from: ".collection", to: ".$.gridList.collection"}	
-		//{from:"data.EnglishListCollectionOfSeoulMOAService.row[0].NAME_E", }	
 	],
 	
 	create: function () {
 		this.inherited(arguments);
-		// we set the collection that will fire the binding and add it to the list
-		//this.set("collection", new enyo.Collection(this.generateRecords()));
-		//var a = new seoulart.ArtCollection();
-		//a.fetch();
-		//this.set("collection", new seoulart.ArtCollection({start_number:'1', end_number:'5'}));
-		
-		this.set("collection", new seoulart.ArtCollection({start_number:'1', end_number:'40'}));
+		// set the collection that will fire the binding and add it to the list
+		this.set("collection", new seoulart.ArtCollection({start_number:'1', end_number:String(clipCount)}));
+		// initial state of prevbutton because it has first page
+		this.$.prevButton.disabled = true;
 	},
-	
-	/*
-	generateRecords: function () {
-		var records = [],
-			idx     = this.index || 1;
-		for (; records.length < 40; ++idx) {
-			var title = "Title";
-			var subTitle = "Artist";
-			records.push({
-				text: title + idx,
-				subText: subTitle + idx,
-				url: "http://placehold.it/300x300/" + "/ffffff&text=Image " + idx
-			});
-		}
-		// update our internal index so it will always generate unique values
-		this.index = idx;
-		return records;
-	},
-	*/
-	
-	nextItems: function () {
-		// we fetch our collection reference
+	previousItems: function(){
+		// fetch our collection reference
 		var collection = this.get("collection");
-		// we now remove all of the current records from the collection
+		// remove all of the current records from the collection
 		collection.removeAll();
-		// and we insert all new records that will update the list
-		//collection.add(this.generateRecords());
-		this.set("collection", new seoulart.ArtCollection({start_number:'41', end_number:'80'}));
+		// insert all new records that will update the list
+		if(collection.get("start_number")){
+			// decrease start_number and end_number
+			var startNum = Number(collection.get("start_number")) - this.clipCount;
+			var endNum = startNum + (this.clipCount-1);
+
+			if(startNum === 1){
+				// disable prevButton when enter to first page
+				this.$.prevButton.disabled = true;
+			} else if(endNum < totalArts){
+				// enable nextButton when escape from last page
+				this.$.nextButton.disabled = false;
+			}
+			// reset the collection that will fire the binding and add it to the list
+			this.set("collection", new seoulart.ArtCollection({start_number:String(startNum), end_number:String(endNum)}));	
+
+		}	
+	},
+	nextItems: function () {
+		// fetch our collection reference
+		var collection = this.get("collection");
+		// now remove all of the current records from the collection
+		collection.removeAll();
+		// we insert all new records that will update the list
+		if(collection.get("start_number")){
+			// increase start_number and end_number 
+			var startNum = Number(collection.get("start_number")) + this.clipCount;
+			var endNum = startNum + (this.clipCount-1);
+
+			// logic of enable/disable buttons when back to first
+			if(endNum > totalArts){				
+				endNum = totalArts;
+				// disable nextButton when enter to last page
+				this.$.nextButton.disabled = true;
+			}else if(startNum > 1){
+				// enable prevButton when escape from first page
+				this.$.prevButton.disabled = false;
+			}
+			// reset the collection that will fire the binding and add it to the list
+			this.set("collection", new seoulart.ArtCollection({start_number:String(startNum), end_number:String(endNum)}));	
+
+		}
+		
 	},
 	showlog : function(){
 		alert("clicked");
@@ -92,6 +122,7 @@ enyo.kind({
 	kind: "moon.GridListImageItem",
 	selectionOverlayVerticalOffset: 35,
 	subCaption: "Sub Caption",
+	// binding datas from gridList's collection to GridListImageItem's controls
 	bindings: [
 		{from: ".model.SUBJECT_E", to: ".caption"},
 		{from: ".model.NAME_E", to: ".subCaption"},

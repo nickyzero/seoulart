@@ -46,7 +46,6 @@ enyo.kind({
 	//url: "http://openapi.seoul.go.kr:8088/sample/json/EnglishListCollectionOfSeoulMOAService/1/5/",
 	create:function(){
 		this.inherited(arguments);
-		//alert(this.get("start_number")+this.get("end_number"));
 		this.fetch();
 	},
 	parse: function(data){
