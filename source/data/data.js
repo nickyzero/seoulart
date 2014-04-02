@@ -3,11 +3,12 @@
 	and sources in this file.  For more complex applications, you might choose to separate
 	these kind definitions into multiple files under this folder.
 */
+/* this app dose not use controller
 enyo.kind({
 	name: "seoulart.ArtList.Controller",
 	kind: "enyo.CollectionController"
 });
-
+*/
 enyo.kind({
 	name:"seoulart.ArtModel",
 	kind:"enyo.Model",
@@ -32,23 +33,20 @@ enyo.kind({
 	getUrl: function(){
 		var domain = 'http://openapi.seoul.go.kr:8088';
 		//var key = 'sample'; // use for test
-		var key = '77687141466e696335367368536448';
+		var key = '77687141466e696335367368536448'; // this key is personal key. it will be deleted when release this code.
 		var type = 'json';
 		var service = 'EnglishListCollectionOfSeoulMOAService';
 		var start_number = '';
-		//var end_number = '919';
-		var end_number = ''; // use for test
+		var end_number = '';
 		return domain+'/'
-			+'/'+ key +'/'+ type +'/'+ service +'/'+ this.get("start_number") +'/'+ this.get("end_number")+'/';
-		//return domain+'/'
-		//	+'/'+ key +'/'+ type +'/'+ service +'/'+ start_number+'/'+ end_number+'/';
+			+'/'+ key +'/'+ type +'/'+ service +'/'+ this.get("start_number") +'/'+ this.get("end_number")+'/';	
 	},
-	//url: "http://openapi.seoul.go.kr:8088/sample/json/EnglishListCollectionOfSeoulMOAService/1/5/",
 	create:function(){
 		this.inherited(arguments);
 		this.fetch();
 	},
 	parse: function(data){
+		var totalCount = data.EnglishListCollectionOfSeoulMOAService.list_total_count;
 		return data.EnglishListCollectionOfSeoulMOAService.row;
 	}
 });

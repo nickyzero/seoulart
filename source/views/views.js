@@ -12,8 +12,8 @@ enyo.kind({
 	
 	published: {
 		collection : null,
-		clipCount : 40,
-		totalArts : 919
+		totalArts : null,
+		clipCount : 40
 	},
 	components: [
 		{kind: "moon.Panel", name: "mainPanel", classes:"moon-3h", headerBackgroundSrc:"assets/Logo_BW.jpg", headerBackgroundPosition: "center left", title:"", components: [
@@ -59,7 +59,9 @@ enyo.kind({
 	create: function () {
 		this.inherited(arguments);
 		// set the collection that will fire the binding and add it to the list
-		this.set("collection", new seoulart.ArtCollection({start_number:'1', end_number:String(clipCount)}));
+		this.set("collection", new seoulart.ArtCollection({start_number:'1', end_number:String(this.clipCount)}));
+		var collection = this.get("collection");
+		this.totalArts = Number(collection.get("totalCount"));
 		// initial state of prevbutton because it has first page
 		this.$.prevButton.disabled = true;
 	},
@@ -77,7 +79,7 @@ enyo.kind({
 			if(startNum === 1){
 				// disable prevButton when enter to first page
 				this.$.prevButton.disabled = true;
-			} else if(endNum < totalArts){
+			} else if(endNum < this.totalArts){
 				// enable nextButton when escape from last page
 				this.$.nextButton.disabled = false;
 			}
@@ -98,8 +100,8 @@ enyo.kind({
 			var endNum = startNum + (this.clipCount-1);
 
 			// logic of enable/disable buttons when back to first
-			if(endNum > totalArts){				
-				endNum = totalArts;
+			if(endNum > this.totalArts){				
+				endNum = this.totalArts;
 				// disable nextButton when enter to last page
 				this.$.nextButton.disabled = true;
 			}else if(startNum > 1){
