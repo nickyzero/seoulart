@@ -9,53 +9,160 @@ enyo.kind({
 	kind: "moon.Panels",
 	pattern: "activity",
 	classes: "moon enyo-fit",
-	
+	handlers:{
+		onRequestReplacePanel : "requestReplacePanel"
+	},
+	components: [
+		{
+			kind: "moon.Panel", 
+			name: "mainPanel", 
+			classes:"moon-3h", 
+			headerBackgroundSrc:"assets/Logo_BW.jpg", 
+			headerBackgroundPosition: "center left", 
+			title:"",
+			handlers:{
+				ontap: "selectedItem"
+			}, 
+			components: [
+				{kind:"moon.Item", content:"Today's Arts"},
+				{kind:"moon.Item", content:"Gallery"},
+				{kind:"moon.Item", content:"SeMA"},
+				{kind:"moon.Item", content:"App Info"}
+			],
+			selectedItem: function(inSender,inEvent){
+				// If you click a Item then selectedItem will be Called.
+				// and check a content of selected Item. 
+				// when matched, request replace the panel to main Panels 
+				if(inEvent.originator.content == "Today's Arts"){
+					this.bubble("onRequestReplacePanel", {panel:{kind:"todayArtPanel"}});
+				} else if (inEvent.originator.content == "Gallery"){
+					this.bubble("onRequestReplacePanel", {panel:{kind:"galleryPanel"}})
+				} else if (inEvent.originator.content == "SeMA"){
+					this.bubble("onRequestReplacePanel", {panel:{kind:"semaPanel"}})
+				} else if (inEvent.originator.content == "App Info"){
+					this.bubble("onRequestReplacePanel", {panel:{kind:"appInfoPanel"}})
+				}
+			}
+		},
+		{
+			kind: "todayArtPanel" // for publish
+			//kind : "galleryPanel" //for develop
+		},
+	],
+	create: function(){
+		this.inherited(arguments);
+	},
+	requestReplacePanel: function(inSender, inEvent){
+		// When requestReplacePanel called, Panels will be replace 2nd panel to requested panel
+		this.replacePanel(this.getPanelIndex(inEvent.originator)+1,inEvent.panel);
+	}
+});
+
+enyo.kind({
+	name: "todayArtPanel", 
+	kind: "moon.Panel",
+	joinToPrev: true,
+	title: "Today's Art",
+	headerBackgroundSrc:"assets/Sema_Title.jpg", 
+	headerBackgroundPosition: "top left", 
+	//classes: "moon enyo-unselectable enyo-fit",
+	published: {
+		collection: null,
+		todayArts: null
+	},
+	components: [{
+		kind: 'moon.Scroller', 
+		classes: "enyo-fill", 
+		components: [{
+			components: [{
+				kind: "moon.Divider", 
+				content: "Today's Recommended Arts", 
+				spotlight: true
+			},{
+				kind: "enyo.DataRepeater",
+				name: "todayArtList",
+				components: [{
+					kind: "moon.sample.ImageItem"
+				}]
+			}]
+		}]
+	}],
+	// Todays Arts Binding and create
+	bindings: [
+		{from: ".collection", to: ".$.todayArtList.collection"},
+	],
+	create: function () {
+		this.inherited(arguments);
+		// set the collection that will fire the binding and add it to the list
+		this.set("collection", new seoulart.ArtCollection({start_number:'1', end_number:'3'}));	
+		
+		//var todayArts = this.get("collection");
+		//alert('todayArts : ' + todayArts);
+		//alert('todayArts model : ' + todayArts.$.MAIN_IMG);
+		//debugger;
+		//alert(this.$.secondArt.label);
+		//todayArts.getRandomArts(3);
+	},
+});
+
+enyo.kind({
+
+	kind: "moon.ImageItem",
+	name: "moon.sample.ImageItem",
+	bindings: [
+		{from: ".model.MAIN_IMG", to: ".source"},
+		{from: ".model.SUBJECT_E", to: ".label"},
+		{from: ".model.DESC_E", to: ".text"}	
+	],
+	create: function(){
+		this.inherited(arguments);
+		//this.$.image.addStyles({"width":"100%", "height":"200px"});
+	}
+});
+
+enyo.kind({
+	name:"galleryPanel",
+	kind: "moon.Panel",  
+	joinToPrev: true, 
+	title:"Gallery", 
+	classes : "title_name",
+	headerBackgroundSrc:"assets/Sema_Title.jpg", 
+	headerBackgroundPosition: "top left", 
+	headerComponents: [
+		{kind: "moon.IconButton", icon: "search", small: false, ontap: "buttonTapped"},
+		{kind: "moon.Button", name: "prevButton", content:"Prev", ontap:"previousItems"},
+		{kind: "moon.Button", name: "nextButton", content:"Next", ontap:"nextItems"},
+	], 
 	published: {
 		collection : null,
 		totalArts : null,
-		clipCount : 40
-	},
-	components: [
-		{kind: "moon.Panel", name: "mainPanel", classes:"moon-3h", headerBackgroundSrc:"assets/Logo_BW.jpg", headerBackgroundPosition: "center left", title:"", components: [
-			{kind:"moon.Item", content:"Introduction"},
-			{kind:"moon.Item", content:"Gallery"},
-			{kind:"moon.Item", content:"SeMA"},
-			{kind:"moon.Item", content:"App Info"}
-		]},
-		
-		{kind: "moon.Panel", name:"subPanel", joinToPrev: true, title:"Seoul Museum of Art", classes : "title_name", headerBackgroundSrc:"assets/Sema_Title.jpg", headerBackgroundPosition: "top left", 
-			headerComponents: [
-			{kind: "moon.IconButton", icon: "search", small: false, ontap: "buttonTapped"},
-			{kind: "moon.Button", name: "prevButton", content:"Prev", ontap:"previousItems"},
-			{kind: "moon.Button", name: "nextButton", content:"Next", ontap:"nextItems"},
-			
-			], 
-			components: [
-			{
-				name: "gridList",
-				kind: "moon.DataGridList", 
-				fit: true, 
-				spacing: 20, 
-				minWidth: 180,
-				//minHeight: 270,
-				minHeight: 500, 
-				fixedSize: false ,
-				scrollerOptions: { kind: "moon.Scroller", vertical:"scroll", horizontal: "hidden", spotlightPagingControls: true }, 
-				components: [
-				{ kind: "moon.sample.GridSampleItem", ontap:"showlog"}
-			]}
-		]},
-
-		//add panel by nicolas
-		{kind: "moon.Panel", name: "detailImage", }
-	],
-
+		clipCount : 5
+	}, 
+	components: [{
+		name: "gridList",
+		kind: "moon.DataGridList", 
+		fit: true, 
+		spacing: 20, 
+		minWidth: 180,
+		//minHeight: 270,
+		minHeight: 300, 
+		fixedSize: false ,
+		scrollerOptions: { 
+			kind: "moon.Scroller", 
+			vertical:"scroll", 
+			horizontal: "hidden", 
+			spotlightPagingControls: true 
+		}, 
+		components: [{ 
+			kind: "moon.sample.GridSampleItem", 
+			ontap:"showlog"
+		}]
+	}],
 	// binding from collection to collection of datalist and gridlist 
 	bindings: [
 		{from: ".collection", to: ".$.dataList.collection"},
 		{from: ".collection", to: ".$.gridList.collection"}	
 	],
-	
 	create: function () {
 		this.inherited(arguments);
 		// set the collection that will fire the binding and add it to the list
@@ -114,8 +221,8 @@ enyo.kind({
 		}
 		
 	},
-	showlog : function(){
-		alert("clicked");
+	showlog : function(inSender, inEvent){
+		alert("You will see a large size image after !! please wait for it.");
 	}
 });
 
@@ -129,5 +236,33 @@ enyo.kind({
 		{from: ".model.SUBJECT_E", to: ".caption"},
 		{from: ".model.NAME_E", to: ".subCaption"},
 		{from: ".model.MAIN_IMG", to: ".source"}
+	],
+	create: function(){
+		this.inherited(arguments);
+		this.$.image.addStyles({"width":"100%", "height":"200px"});
+	}
+});
+
+enyo.kind({
+	name: "semaPanel", 
+	kind: "moon.Panel",
+	joinToPrev: true,
+	title: "Seoul Museum of Art",
+	headerBackgroundSrc:"assets/Sema_Title.jpg", 
+	headerBackgroundPosition: "top left", 
+	components:[
+		{content:"This is art museum in seoul. There are many famous arts."}
+	]
+});
+
+enyo.kind({
+	name: "appInfoPanel", 
+	kind: "moon.Panel",
+	joinToPrev: true,
+	title: "App Information",
+	headerBackgroundSrc:"assets/Sema_Title.jpg", 
+	headerBackgroundPosition: "top left", 
+	components:[
+		{content:"detailImage"}
 	]
 });
