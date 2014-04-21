@@ -145,7 +145,7 @@ enyo.kind({
 	published: {
 		collection : null,
 		totalArts : null,
-		clipCount : 5
+		clipCount : 40
 	}, 
 	components: [{
 		name: "gridList",
@@ -231,7 +231,17 @@ enyo.kind({
 		
 	},
 	showlog : function(inSender, inEvent){
-		this.bubble("onRequestPushPanel", {panel:{kind:"artDetailPanel"}});
+		// when requestPushPanel, information(caption, subCaption, source) are sending to parent. 
+		this.bubble("onRequestPushPanel", 
+			{panel:{
+				kind:"artDetailPanel", 
+				published:{
+					caption: inSender.caption,
+					subCaption: inSender.subCaption,
+					source: inSender.source
+				}}
+			}
+		);
 	}
 });
 
@@ -279,11 +289,33 @@ enyo.kind({
 enyo.kind({
 	name: "artDetailPanel",
 	kind: "moon.Panel",
-	//joinToPrev: true,
 	title: "artDetailPanel",
 	headerBackgroundSrc:"assets/Sema_Title.jpg", 
-	headerBackgroundPosition: "top left", 
+	headerBackgroundPosition: "top left",
+	smallHeader: true,
 	components:[
-		{content:"art detail Panel"}
-	]
+		{
+			kind:"FittableColumns",
+			name: "imageArea",
+			components:[
+				{classes: "moon-1h"},
+				{kind: "enyo.Image", name: "imageArea_Image"},
+				{components:[
+					{kind: "moon.Divider", content: "Art Name"},
+					{kind: "moon.BodyText", name: "imageArea_artName"},
+					{kind: "moon.Divider", content: "Artist"},
+					{kind: "moon.BodyText", name: "imageArea_artist"},
+
+				]},
+			]
+		}
+	],
+	create: function(){
+		this.inherited(arguments);
+		this.$.imageArea_Image.setSrc(this.source);
+		//this.$.imageArea_Image.addStyles({"height":"200%"});
+
+		this.$.imageArea_artName.setContent(this.caption);
+		this.$.imageArea_artist.setContent(this.subCaption);
+	}
 });
