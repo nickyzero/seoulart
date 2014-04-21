@@ -10,7 +10,8 @@ enyo.kind({
 	pattern: "activity",
 	classes: "moon enyo-fit",
 	handlers:{
-		onRequestReplacePanel : "requestReplacePanel"
+		onRequestReplacePanel : "requestReplacePanel",
+		onRequestPushPanel: "requestPushPanel"
 	},
 	components: [
 		{
@@ -55,6 +56,14 @@ enyo.kind({
 	requestReplacePanel: function(inSender, inEvent){
 		// When requestReplacePanel called, Panels will be replace 2nd panel to requested panel
 		this.replacePanel(this.getPanelIndex(inEvent.originator)+1,inEvent.panel);
+	},
+	requestPushPanel: function(inSender, inEvent){
+		// When artDetailPanel existed, remove that panel
+		if(this.getPanels().length == 3){
+			this.popPanels(2);
+		}
+		// push artDetailPanel after galleryPanel
+		this.pushPanel(inEvent.panel);
 	}
 });
 
@@ -222,7 +231,7 @@ enyo.kind({
 		
 	},
 	showlog : function(inSender, inEvent){
-		alert("You will see a large size image after !! please wait for it.");
+		this.bubble("onRequestPushPanel", {panel:{kind:"artDetailPanel"}});
 	}
 });
 
@@ -264,5 +273,17 @@ enyo.kind({
 	headerBackgroundPosition: "top left", 
 	components:[
 		{content:"detailImage"}
+	]
+});
+
+enyo.kind({
+	name: "artDetailPanel",
+	kind: "moon.Panel",
+	//joinToPrev: true,
+	title: "artDetailPanel",
+	headerBackgroundSrc:"assets/Sema_Title.jpg", 
+	headerBackgroundPosition: "top left", 
+	components:[
+		{content:"art detail Panel"}
 	]
 });
