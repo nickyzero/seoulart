@@ -77,7 +77,8 @@ enyo.kind({
 	//classes: "moon enyo-unselectable enyo-fit",
 	published: {
 		collection: null,
-		todayArts: null
+		totalArts : null,
+		todayArts: null,
 	},
 	components: [{
 		kind: 'moon.Scroller', 
@@ -103,14 +104,15 @@ enyo.kind({
 	create: function () {
 		this.inherited(arguments);
 		// set the collection that will fire the binding and add it to the list
-		this.set("collection", new seoulart.ArtCollection({start_number:'1', end_number:'3'}));	
-		
-		//var todayArts = this.get("collection");
-		//alert('todayArts : ' + todayArts);
-		//alert('todayArts model : ' + todayArts.$.MAIN_IMG);
-		//debugger;
-		//alert(this.$.secondArt.label);
-		//todayArts.getRandomArts(3);
+
+		// 2014 4 22 now working
+		var temp = new seoulart.ArtCollection({start_number:'1', end_number:'2'});
+		this.totalArts = temp.get("totalCount");
+		alert("Total arts : " + this.totalArts);
+		this.todayArts = new seoulart.ArtCollection({start_number:'1', end_number: this.totalArts});
+		var artsBuffer = this.todayArts.raw();
+		alert("Todays arts : " + artsBuffer);
+		this.set("collection", artsBuffer);	
 	},
 });
 
@@ -138,14 +140,14 @@ enyo.kind({
 	headerBackgroundSrc:"assets/Sema_Title.jpg", 
 	headerBackgroundPosition: "top left", 
 	headerComponents: [
-		{kind: "moon.IconButton", icon: "search", small: false, ontap: "buttonTapped"},
+		//{kind: "moon.IconButton", icon: "search", small: false, ontap: "buttonTapped"},
 		{kind: "moon.Button", name: "prevButton", content:"Prev", ontap:"previousItems"},
 		{kind: "moon.Button", name: "nextButton", content:"Next", ontap:"nextItems"},
 	], 
 	published: {
 		collection : null,
 		totalArts : null,
-		clipCount : 40
+		clipCount : 5
 	}, 
 	components: [{
 		name: "gridList",

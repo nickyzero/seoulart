@@ -1,0 +1,10 @@
+{
+	"id": "com.sample.app.sema",
+	"version": "1.0.0",
+	"uiRevision": 2,
+	"vendor": "LGE",
+	"type": "web",
+	"main": "index.html",
+	"title": "Seoul Museum of Art",
+	"icon": "icon.png"
+}

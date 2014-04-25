@@ -32,8 +32,8 @@ enyo.kind({
 	model: "seoulart.ArtModel",
 	getUrl: function(){
 		var domain = 'http://openapi.seoul.go.kr:8088';
-		//var key = 'sample'; // use for test
-		var key = '77687141466e696335367368536448'; // this key is personal key. it will be deleted when release this code.
+		var key = 'sample'; // use for test
+		//var key = '77687141466e696335367368536448'; // this key is personal key. it will be deleted when release this code.
 		var type = 'json';
 		var service = 'EnglishListCollectionOfSeoulMOAService';
 		var start_number = '';
@@ -49,13 +49,4 @@ enyo.kind({
 		var totalCount = data.EnglishListCollectionOfSeoulMOAService.list_total_count;
 		return data.EnglishListCollectionOfSeoulMOAService.row;
 	},
-});
-
-enyo.kind({
-	name: "seoulart.todayArtCollection",
-	kind: "enyo.Collection",
-	create: function(){
-		this.inherited(arguments);
-		this.fetch();
-	}
 });
