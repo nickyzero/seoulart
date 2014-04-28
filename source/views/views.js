@@ -77,8 +77,8 @@ enyo.kind({
 	//classes: "moon enyo-unselectable enyo-fit",
 	published: {
 		collection: null,
-		totalArts : null,
-		todayArts: null,
+		totalArts : 920,
+		todayArts: null
 	},
 	components: [{
 		kind: 'moon.Scroller', 
@@ -91,39 +91,78 @@ enyo.kind({
 			},{
 				kind: "enyo.DataRepeater",
 				name: "todayArtList",
-				components: [{
-					kind: "moon.sample.ImageItem"
-				}]
+				components: [
+				{
+					kind: "moon.sample.ImageItem",
+					ontap: "showDetailImage",
+				},
+				// 20140426 0747 Nicolas
+				/*
+				{
+					kind:"FittableColumns",
+					name: "todayImage",
+					components:[
+						{classes: "moon-1h"},
+						{kind: "enyo.Image", name: "todayImage_Image"},
+						{components:[
+							{kind: "moon.Divider", content: "Art Name"},
+							{kind: "moon.BodyText", name: "todayImage_artName"},
+							{kind: "moon.Divider", content: "Artist"},
+							{kind: "moon.BodyText", name: "todayImage_artist"},
+
+						]},
+					]
+				}*/
+				]
 			}]
 		}]
 	}],
 	// Todays Arts Binding and create
 	bindings: [
-		{from: ".collection", to: ".$.todayArtList.collection"},
+		{from: ".collection", to: ".$.todayArtList.collection"}
 	],
 	create: function () {
 		this.inherited(arguments);
 		// set the collection that will fire the binding and add it to the list
 
-		// 2014 4 22 now working
-		var temp = new seoulart.ArtCollection({start_number:'1', end_number:'2'});
-		this.totalArts = temp.get("totalCount");
-		alert("Total arts : " + this.totalArts);
-		this.todayArts = new seoulart.ArtCollection({start_number:'1', end_number: this.totalArts});
-		var artsBuffer = this.todayArts.raw();
-		alert("Todays arts : " + artsBuffer);
-		this.set("collection", artsBuffer);	
+		var today = new Date();
+		var numberForGetArt = (today.getUTCFullYear() + today.getUTCMonth() + today.getUTCDate()) % Number(this.totalArts);
+		this.set("collection", new seoulart.ArtCollection({start_number:String(numberForGetArt), end_number:String(numberForGetArt)}));
 	},
+	showDetailImage : function(inSender, inEvent){
+		// when requestPushPanel, information(caption, desc, source) are sending to parent. 
+		this.bubble("onRequestPushPanel", 
+			{panel:{
+				kind:"artDetailPanel", 
+				published:{
+					caption: inSender.label,
+					desc: inSender.text,
+					source: inSender.source,
+					artists : inSender.artistName,
+					arttype: inSender.arttype,
+					artdate: inSender.artdate
+				}
+			}}
+		);
+	}
 });
 
 enyo.kind({
 
 	kind: "moon.ImageItem",
 	name: "moon.sample.ImageItem",
+	published: {
+		artistName: null,
+		arttype: null,
+		artdate: null
+	},
 	bindings: [
 		{from: ".model.MAIN_IMG", to: ".source"},
 		{from: ".model.SUBJECT_E", to: ".label"},
-		{from: ".model.DESC_E", to: ".text"}	
+		{from: ".model.DESC_E", to: ".text"},
+		{from: ".model.NAME_E", to: ".artistName"},
+		{from: ".model.ART_CODE_NAME", to: ".arttype"},
+		{from: ".model.WORK_DATE", to: ".artdate"}	
 	],
 	create: function(){
 		this.inherited(arguments);
@@ -147,7 +186,7 @@ enyo.kind({
 	published: {
 		collection : null,
 		totalArts : null,
-		clipCount : 5
+		clipCount : 40
 	}, 
 	components: [{
 		name: "gridList",
@@ -166,7 +205,7 @@ enyo.kind({
 		}, 
 		components: [{ 
 			kind: "moon.sample.GridSampleItem", 
-			ontap:"showlog"
+			ontap:"showDetailImage"
 		}]
 	}],
 	// binding from collection to collection of datalist and gridlist 
@@ -232,15 +271,18 @@ enyo.kind({
 		}
 		
 	},
-	showlog : function(inSender, inEvent){
+	showDetailImage : function(inSender, inEvent){
 		// when requestPushPanel, information(caption, subCaption, source) are sending to parent. 
 		this.bubble("onRequestPushPanel", 
 			{panel:{
 				kind:"artDetailPanel", 
 				published:{
 					caption: inSender.caption,
-					subCaption: inSender.subCaption,
-					source: inSender.source
+					artists: inSender.subCaption,
+					source: inSender.source,
+					desc: inSender.desc,
+					arttype: inSender.arttype,
+					artdate: inSender.artdate
 				}}
 			}
 		);
@@ -253,13 +295,22 @@ enyo.kind({
 	selectionOverlayVerticalOffset: 35,
 	subCaption: "Sub Caption",
 	// binding datas from gridList's collection to GridListImageItem's controls
+	published: {
+		desc: null,
+		arttype: null,
+		artdate: null
+	},
 	bindings: [
 		{from: ".model.SUBJECT_E", to: ".caption"},
 		{from: ".model.NAME_E", to: ".subCaption"},
-		{from: ".model.MAIN_IMG", to: ".source"}
+		{from: ".model.MAIN_IMG", to: ".source"},
+		{from: ".model.DESC_E", to: ".desc"},
+		{from: ".model.ART_CODE_NAME", to: ".arttype"},
+		{from: ".model.WORK_DATE", to: ".artdate"}
 	],
 	create: function(){
 		this.inherited(arguments);
+		// when drawing image on the panel, image will be resized 
 		this.$.image.addStyles({"width":"100%", "height":"200px"});
 	}
 });
@@ -271,9 +322,74 @@ enyo.kind({
 	title: "Seoul Museum of Art",
 	headerBackgroundSrc:"assets/Sema_Title.jpg", 
 	headerBackgroundPosition: "top left", 
-	components:[
-		{content:"This is art museum in seoul. There are many famous arts."}
-	]
+	//classes: "moon enyo-unselectable enyo-fit",
+	components: [
+		{kind: 'moon.Scroller', name: "scroller", classes: "enyo-fill", components: [
+			{
+				components: [
+					{kind: "moon.Divider", content: "Seoul Museum of Art", spotlight: true},
+					{
+						components: [
+							{
+								kind: "moon.ImageItem",
+								//fit:true,
+								source: "assets/sema_01.png",
+								label: "About SeMA",
+								text: "Seoul Museum of Art is the representative art museum of Seoul, the capital of Korea and a central city of Asia, and it aims at the “Beautiful, Good, and Smart Art Museum.” For this, the museum has also set up two major objectives: the world-renowned art museum and the art museum of the city that communicates with citizens and visitors."
+							},
+							{
+								kind: "moon.ImageItem",
+								source: "assets/sema_02.png",
+								label: "Exhibition",
+								text: "SeMA is contributing to the development of Korean art circles through a variety of special exhibitions with Korean artists and international exhibitions that show the trend of art outside the country and also expanding the base of art culture through the Communication through Art projects."
+							},
+							{
+								kind: "moon.ImageItem",
+								source: "assets/sema_03.png",
+								label: "Collections",
+								text: "SeMA has a collection of 3,500 pieces of art including painting, sculpture, installation, and media, and the typical works of the masters in the art history such as Hwan Gi Kim, Young Gook Yoo, Nam June Pai, Woo Hwan Lee, Seo Bo Park, and Myoung Ro Yoon as well as contemporary and famous artists."
+							}
+						]
+					}
+				]
+			},
+			{tag: "br"},
+			{
+				components: [
+					{kind: "moon.Divider", content: "Other Information"},
+					{
+						components: [
+							{
+								kind: "moon.ImageItem",
+								source: "assets/clock.png",
+								label: "Opening Hours",
+								imageAlignRight: true,
+								text: "[Weekdays] 10:00 ~ 20:00 / [Weekend] 10:00 ~ 18:00"
+							},
+							{
+								kind: "moon.ImageItem",
+								source: "assets/subway.png",
+								label: "Way to the SeMA",
+								imageAlignRight: true,
+								text: "Subway line 1 : exit gate #1 of Seoul City Hall station (to the direction of the Seosonum annex building of Seoul City Hall) / Subway line 2 : exit gate #11 or #12 of Seoul City Hall station / Subway line 5 : exit gate #5 of Gwanghwamun station"
+							},
+							{
+								kind: "moon.ImageItem",
+								source: "assets/hall.png",
+								label: "Exhibition Hall Information",
+								imageAlignRight: true,
+								text: "B1 : Lecture hall & Seminar room / 1F : Nursery & the 1nd Exhibition Room / 2F : the 2nd Exhibition Room & Chun Kyung-Ja Hall & Museum Library / 3F : the 3rd Exhibition Room & the 4th Exhibition Room"
+							}
+						]
+					}
+				]
+			}
+		]}
+	],
+	create: function(){
+		this.inherited(arguments);
+		this.$.scroller.addStyles({"width":"100%"});
+	}
 });
 
 enyo.kind({
@@ -284,7 +400,29 @@ enyo.kind({
 	headerBackgroundSrc:"assets/Sema_Title.jpg", 
 	headerBackgroundPosition: "top left", 
 	components:[
-		{content:"detailImage"}
+		{kind: "FittableRows",
+			classes: "moon enyo-unselectable enyo-fit",
+			components: [
+				{kind: "moon.Scroller", fit: true,  
+					components: [
+						{kind: "moon.Divider", content: "Application Infomation"},
+						{kind: "moon.ExpandableText", content: "Version: 1.0"},
+						{tag: "br"},
+						
+						{kind: "moon.Divider", content: "Purpose of This Application"},
+						{kind: "moon.ExpandableText", content: "To help to promote Enyo Application and its Eco-System"},
+						{tag: "br"},
+						
+						{kind: "moon.Divider", content: "Development"},
+						{kind: "moon.ExpandableText", content: "TED part, Software Platform Lab., CTO division, LG Electronics"},
+						{tag: "br"},
+						
+						{kind: "moon.Divider", content: "Copyright"},
+						{kind: "moon.ExpandableText", content: "Copyright © 2014 LG Electronics. All Rights Reserved."},
+					]
+				}
+			]
+		}
 	]
 });
 
@@ -302,22 +440,74 @@ enyo.kind({
 			components:[
 				{classes: "moon-1h"},
 				{kind: "enyo.Image", name: "imageArea_Image"},
-				{components:[
-					{kind: "moon.Divider", content: "Art Name"},
-					{kind: "moon.BodyText", name: "imageArea_artName"},
-					{kind: "moon.Divider", content: "Artist"},
-					{kind: "moon.BodyText", name: "imageArea_artist"},
-
-				]},
+				{classes: "moon-1h"},
+				{kind:"FittableRows",
+					components:[
+						{
+							kind: "FittableColumns",
+							components:[
+								{components:[
+									{kind: "moon.Divider", content: "Art Name"},
+									{kind: "moon.BodyText", name: "imageArea_artName"},
+									{tag: "br"},
+									{kind: "moon.Divider", content: "Art Type"},
+									{kind: "moon.BodyText", name: "imageArea_artType"},
+								]},
+								{components:[
+									{kind: "moon.Divider", content: "Artist"},
+									{kind: "moon.BodyText", name: "imageArea_artist"},	
+									{tag: "br"},
+									{kind: "moon.Divider", content: "Created Date"},
+									{kind: "moon.BodyText", name: "imageArea_artDate"},
+								]}
+							]
+						},
+						{
+							kind: "FittableColumns",
+							components:[
+								{kind:"FittableRows",
+								components:[
+									{kind: "moon.Divider", name: "imageArea_discription_divider", content: "Description"},
+									{kind: "moon.BodyText", fit:true, name: "imageArea_discription"},
+								]}
+							]
+						}
+					]
+				},
 			]
 		}
 	],
 	create: function(){
 		this.inherited(arguments);
+		this.$.imageArea_discription.setBounds({width: 65, height: 100}, "%")
+		//this.$.imageArea_discription_divider.setBounds({width: 65, height: 100}, "%")
 		this.$.imageArea_Image.setSrc(this.source);
 		//this.$.imageArea_Image.addStyles({"height":"200%"});
-
 		this.$.imageArea_artName.setContent(this.caption);
-		this.$.imageArea_artist.setContent(this.subCaption);
+
+		if(typeof this.artists == "undefined"){
+			this.$.imageArea_artist.hide();
+		} else {
+			this.$.imageArea_artist.setContent(this.artists);
+		}
+		
+		if(typeof this.desc == "undefined"){
+			this.$.imageArea_discription.hide();
+		} else {
+			this.$.imageArea_discription.setContent(this.desc);
+		}
+
+		if(typeof this.arttype == "undefined"){
+			this.$.imageArea_artType.hide();
+		} else {
+			this.$.imageArea_artType.setContent(this.arttype);
+		}
+
+		if(typeof this.artdate == "undefined"){
+			this.$.imageArea_artDate.hide();
+		} else {
+			this.$.imageArea_artDate.setContent(this.artdate);
+		}
+		
 	}
 });
