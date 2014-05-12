@@ -48,5 +48,5 @@ enyo.kind({
 	parse: function(data){
 		var totalCount = data.EnglishListCollectionOfSeoulMOAService.list_total_count;
 		return data.EnglishListCollectionOfSeoulMOAService.row;
-	},
+	}
 });

@@ -28,7 +28,7 @@ enyo.kind({
 				{kind:"moon.Item", content:"Today's Arts"},
 				{kind:"moon.Item", content:"Gallery"},
 				{kind:"moon.Item", content:"SeMA"},
-				{kind:"moon.Item", content:"App Info"}
+				{kind:"moon.Item", content:"App Info"},
 			],
 			selectedItem: function(inSender,inEvent){
 				// If you click a Item then selectedItem will be Called.
@@ -81,7 +81,7 @@ enyo.kind({
 		todayArts: null
 	},
 	components: [{
-		kind: 'moon.Scroller', 
+		kind: "moon.Scroller", 
 		classes: "enyo-fill", 
 		components: [{
 			components: [{
@@ -95,25 +95,7 @@ enyo.kind({
 				{
 					kind: "moon.sample.ImageItem",
 					ontap: "showDetailImage",
-				},
-				// 20140426 0747 Nicolas
-				/*
-				{
-					kind:"FittableColumns",
-					name: "todayImage",
-					components:[
-						{classes: "moon-1h"},
-						{kind: "enyo.Image", name: "todayImage_Image"},
-						{components:[
-							{kind: "moon.Divider", content: "Art Name"},
-							{kind: "moon.BodyText", name: "todayImage_artName"},
-							{kind: "moon.Divider", content: "Artist"},
-							{kind: "moon.BodyText", name: "todayImage_artist"},
-
-						]},
-					]
-				}*/
-				]
+				}]
 			}]
 		}]
 	}],
@@ -130,7 +112,7 @@ enyo.kind({
 		this.set("collection", new seoulart.ArtCollection({start_number:String(numberForGetArt), end_number:String(numberForGetArt)}));
 	},
 	showDetailImage : function(inSender, inEvent){
-		// when requestPushPanel, information(caption, desc, source) are sending to parent. 
+		// when requestPushPanel, information will be send to parent. 
 		this.bubble("onRequestPushPanel", 
 			{panel:{
 				kind:"artDetailPanel", 
@@ -166,7 +148,6 @@ enyo.kind({
 	],
 	create: function(){
 		this.inherited(arguments);
-		//this.$.image.addStyles({"width":"100%", "height":"200px"});
 	}
 });
 
@@ -180,13 +161,16 @@ enyo.kind({
 	headerBackgroundPosition: "top left", 
 	headerComponents: [
 		//{kind: "moon.IconButton", icon: "search", small: false, ontap: "buttonTapped"},
+		{name:"pageCount"},
 		{kind: "moon.Button", name: "prevButton", content:"Prev", ontap:"previousItems"},
 		{kind: "moon.Button", name: "nextButton", content:"Next", ontap:"nextItems"},
 	], 
 	published: {
 		collection : null,
-		totalArts : null,
-		clipCount : 40
+		totalArts : 920,
+		clipCount : 40,
+		totalPageCount : null,
+		pageIndex: 0
 	}, 
 	components: [{
 		name: "gridList",
@@ -194,7 +178,6 @@ enyo.kind({
 		fit: true, 
 		spacing: 20, 
 		minWidth: 180,
-		//minHeight: 270,
 		minHeight: 300, 
 		fixedSize: false ,
 		scrollerOptions: { 
@@ -217,11 +200,43 @@ enyo.kind({
 		this.inherited(arguments);
 		// set the collection that will fire the binding and add it to the list
 		this.set("collection", new seoulart.ArtCollection({start_number:'1', end_number:String(this.clipCount)}));
+		this.initialSetup();
+
+	},
+	// Increse Page Index
+	incresePageIndex: function(){
+		if(this.pageIndex < this.totalPageCount){
+			this.pageIndex = this.pageIndex+1;
+		}
+	},
+	// decrease Page Index
+	decreasePageIndex: function(){
+		if(this.pageIndex > 0){
+			this.pageIndex = this.pageIndex-1;
+		} 
+	},
+	setPageIndex: function(){
+		this.$.pageCount.setContent(String(this.pageIndex) + "/" + String(this.totalPageCount));
+	},
+	initialSetup: function(){
+
 		var collection = this.get("collection");
-		this.totalArts = Number(collection.get("totalCount"));
+
+		// currently did not get value from data.
+		// this.totalArts = collection.get("totalCount");
+
 		// initial state of prevbutton because it has first page
 		this.$.prevButton.disabled = true;
+
+		if(collection.isFetching == true){
+			this.totalPageCount = this.totalArts/this.clipCount;
+			this.incresePageIndex();
+			this.setPageIndex();
+		} else {
+			alert("collection don't fetched yet");
+		}
 	},
+
 	previousItems: function(){
 		// fetch our collection reference
 		var collection = this.get("collection");
@@ -242,8 +257,10 @@ enyo.kind({
 			}
 			// reset the collection that will fire the binding and add it to the list
 			this.set("collection", new seoulart.ArtCollection({start_number:String(startNum), end_number:String(endNum)}));	
+		}
+		this.decreasePageIndex();
+		this.setPageIndex();
 
-		}	
 	},
 	nextItems: function () {
 		// fetch our collection reference
@@ -269,10 +286,12 @@ enyo.kind({
 			this.set("collection", new seoulart.ArtCollection({start_number:String(startNum), end_number:String(endNum)}));	
 
 		}
+		this.incresePageIndex();
+		this.setPageIndex();
 		
 	},
 	showDetailImage : function(inSender, inEvent){
-		// when requestPushPanel, information(caption, subCaption, source) are sending to parent. 
+		// when requestPushPanel, information will be send to parent. 
 		this.bubble("onRequestPushPanel", 
 			{panel:{
 				kind:"artDetailPanel", 
@@ -324,7 +343,7 @@ enyo.kind({
 	headerBackgroundPosition: "top left", 
 	//classes: "moon enyo-unselectable enyo-fit",
 	components: [
-		{kind: 'moon.Scroller', name: "scroller", classes: "enyo-fill", components: [
+		{kind: "moon.Scroller", name: "scroller", classes: "enyo-fill", components: [
 			{
 				components: [
 					{kind: "moon.Divider", content: "Seoul Museum of Art", spotlight: true},
@@ -388,7 +407,8 @@ enyo.kind({
 	],
 	create: function(){
 		this.inherited(arguments);
-		this.$.scroller.addStyles({"width":"100%"});
+		//this.$.scroller.addStyles({"width":"100%"});
+		//this.$.scroller.setBounds({width: 80, height: 100}, "%")
 	}
 });
 
